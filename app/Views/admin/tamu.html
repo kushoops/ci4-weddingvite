@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="/modules/tailwindcss.js"></script>
+  <script src="/modules/config.js"></script>
+  <script src="/modules/cookies.js"></script>
+</head>
+<body>
+<div id="container" class="p-2">
+  <div class="flex justify-between border-b border-black/40 p-2">
+    <span id="n-tamu"></span>
+    <a id="tambah-tamu" href="">Tambah</a>
+  </div>
+  <div id="list-tamu"></div>
+</div>
+<script>
+  document.querySelector('#tambah-tamu').href = `tambah-tamu?${window.location.search.substr(1).split('/')[0]}/${window.location.search.substr(1).split('/')[1]}`
+
+  // Get list tamu
+  listTamu()
+  async function listTamu() {
+    await fetch(`${uri}/api/tamu/list/${window.location.search.substr(1).split('/')[1]}`, {
+      headers: {
+        'Authorization': `Bearer ${getCookie('token')}`
+      }
+    })
+    .then(res=>res.json())
+    .then(res=>{
+      if(!res.status) {
+        alert(res.message)
+        window.location.replace(`${uri}/login`)
+      }else {
+        const data = JSON.parse(JSON.stringify(res.data))
+        document.querySelector('#n-tamu').innerHTML = `${Object.keys(data).length} tamu`
+        let tempUI = ''
+        Object.values(data).map((key, index) => {
+          tempUI += `<div class="list relative flex justify-between border-b border-black/40 p-2">
+                      <span>${key['nama']}</span>
+                      <button class="more">:</button>
+                      <div class="bg-black/20 opsi hidden absolute right-6 -bottom-6 p-4 rounded-xl flex flex-col">
+                        <button class="hapus" value="${key['id']}">Hapus</button>
+                      </div>
+                    </div>`
+        })
+        document.querySelector('#list-tamu').innerHTML = tempUI
+
+        document.body.addEventListener('click', e => {
+          if(!e.target.classList.contains('opsi') && !e.target.classList.contains('more')) {
+            document.querySelectorAll('.list').forEach(e => {
+              if(!e.childNodes[5].classList.contains('hidden')) {
+                e.childNodes[5].classList.add('hidden')
+              }
+            })
+          }
+        })
+
+        document.querySelectorAll('.list').forEach(e => {
+          e.childNodes[3].addEventListener('click', () => {
+            document.querySelectorAll('.list').forEach(e => {
+              if(!e.childNodes[5].classList.contains('hidden')) {
+                e.childNodes[5].classList.add('hidden')
+              }
+            })
+            e.childNodes[5].classList.remove('hidden')
+          })
+        })
+
+        document.querySelectorAll('.hapus').forEach(e => {
+          e.addEventListener('click', async () => {
+            await fetch(`${uri}/api/tamu/remove/${e.value}`, {
+              headers: {
+                'Authorization': `Bearer ${getCookie('token')}`
+              },
+              method: 'DELETE'
+            })
+            .then(res=>res.json())
+            .then(res=>!res.status?alert(res.message):listTamu())
+          })
+        })
+      }
+    })
+    .catch(err=>console.log(err))
+  }
+</script>
+</body>
+</html>

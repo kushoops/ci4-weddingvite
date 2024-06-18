@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="/modules/tailwindcss.js"></script>
+  <script src="/modules/config.js"></script>
+  <script src="/modules/cookies.js"></script>
+</head>
+<body>
+<div class="p-2">
+  <form class="flex gap-4 flex-col p-4"></form>
+</div>
+<script>
+
+  // Get list undangan
+  async function listUndangan(selected) {
+    await fetch(`${uri}/api/undangan/list`, {
+      headers: {
+        'Authorization': `Bearer ${getCookie('token')}`
+      }
+    })
+    .then(res=>res.json())
+    .then(res=>{
+      const data = JSON.parse(JSON.stringify(res.data))
+      let tempUI = ''
+      Object.values(data).map((e, i) => {
+        tempUI += `<option value="${e['kode']}" ${e['kode'] == selected ? 'selected' : ''}>${e['kode']}</option>`
+      })
+      document.querySelector('#kode-undangan').innerHTML = tempUI
+    })
+  }
+
+  // Get data undangan
+  dataUndangan()
+  async function dataUndangan() {
+    await fetch(`${uri}/api/mempelai/single/${window.location.search.substr(1).split('/')[1]}`, {
+      headers: {
+        'Authorization': `Bearer ${getCookie('token')}`
+      }
+    })
+    .then(res=>res.json())
+    .then(async res=>{
+      if(!res.status) {
+        console.log(res.message)
+      }else {
+        const tempUI = `<span class="self-center">Data Undangan</span>
+                        <label for="kode-undangan">Kode undangan</label>
+                        <select class="p-2" name="kode_undangan" id="kode-undangan"></select>
+                        <label for="jenis-undangan">Jenis undangan</label>
+                        <select class="p-2" name="jenis_undangan" id="jenis-undangan">
+                          <option value='normal' ${res.data.jenis_undangan=='normal' ? 'selected' : ''}>Normal</option>
+                          <option value='premium' ${res.data.jenis_undangan=='premium' ? 'selected' : ''}>Premium</option>
+                        </select>
+
+                        <input id="username" type="hidden" name="username" value="${res.data.username}">
+                        <label for="nama-wanita">Nama wanita</label>
+                        <input class="p-2 border-b border-black/40" id="nama-wanita" type="text" name="nama_wanita" value="${res.data.nama_wanita}">
+                        <label for="nama-pria">Nama pria</label>
+                        <input class="p-2 border-b border-black/40" id="nama-pria" type="text" name="nama_pria" value="${res.data.nama_pria}">
+
+                        <label for="cover-bgimg1">Gambar background cover 1</label>
+                        <img class="border border-black ${!res.data.cover_bgimg1||res.data.cover_bgimg1 == 'undefined'?'hidden':''}" src="/assets/mempelai/${res.data.username}/${res.data.cover_bgimg1}" alt="" width="96" height="96">
+                        <input id="old-cover-bgimg1" type="hidden" name="old_cover_bgimg1" value="${res.data.cover_bgimg1}">
+                        <input class="p-2 border-b border-black/40" id="cover-bgimg1" type="file" name="cover_bgimg1" accept=".jpg, .png">
+                        <label for="cover-bgimg2">Gambar background cover 2</label>
+                        <img class="border border-black ${!res.data.cover_bgimg2||res.data.cover_bgimg2 == 'undefined'?'hidden':''}" src="/assets/mempelai/${res.data.username}/${res.data.cover_bgimg2}" alt="" width="96" height="96">
+                        <input id="old-cover-bgimg2" type="hidden" name="old_cover_bgimg2" value="${res.data.cover_bgimg2}">
+                        <input class="p-2 border-b border-black/40" id="cover-bgimg2" type="file" name="cover_bgimg2" accept=".jpg, .png">
+                        <label for="cover-bgimg3">Gambar background cover 3</label>
+                        <img class="border border-black ${!res.data.cover_bgimg3||res.data.cover_bgimg3 == 'undefined'?'hidden':''}" src="/assets/mempelai/${res.data.username}/${res.data.cover_bgimg3}" alt="" width="96" height="96">
+                        <input id="old-cover-bgimg3" type="hidden" name="old_cover_bgimg3" value="${res.data.cover_bgimg3}">
+                        <input class="p-2 border-b border-black/40" id="cover-bgimg3" type="file" name="cover_bgimg3" accept=".jpg, .png">
+                        
+                        <label for="music">Music</label>
+                        <button class="${!res.data.music||res.data.music == 'undefined'?'hidden':''}" type="button">${res.data.music}</button>
+                        <input id="old-music" type="hidden" name="old_music" value="${res.data.music}">
+                        <input class="p-2 border-b border-black/40" id="music" type="file" name="music" accept=".mp3">
+                        
+                        <label for="home-img">Foto mempelai</label>
+                        <img class="border border-black ${!res.data.home_img||res.data.home_img == 'undefined'?'hidden':''}" src="/assets/mempelai/${res.data.username}/${res.data.home_img}" alt="" width="96" height="96">
+                        <input id="old-home-img" type="hidden" name="old_home_img" value="${res.data.home_img}">
+                        <input class="p-2 border-b border-black/40" id="home-img" type="file" name="home_img" accept=".jpg, .png">
+                        
+                        <label for="pembuka-doa">Doa pembuka</label>
+                        <input class="p-2 border-b border-black/40" id="pembuka-doa" type="text" name="pembuka_doa value="${res.data.pembuka_doa}">
+                        <label for="pembuka-text">Pembukaan</label>
+                        <input class="p-2 border-b border-black/40" id="pembuka-text" type="text" name="pembuka_text" value="${res.data.pembuka_text}">
+                        
+                        <label for="mempelai-wanita-img">Foto mempelai wanita</label>
+                        <img class="border border-black ${!res.data.mempelai_wanita_img||res.data.mempelai_wanita_img == 'undefined'?'hidden':''}" src="/assets/mempelai/${res.data.username}/${res.data.mempelai_wanita_img}" alt="" width="96" height="96">
+                        <input id="old-mempelai-wanita-img" type="hidden" name="old_mempelai_wanita_img" value="${res.data.mempelai_wanita_img}">
+                        <input class="p-2 border-b border-black/40" id="mempelai-wanita-img" type="file" name="mempelai_wanita_img" accept=".jpg, .png">
+                        <label for="mempelai-wanita-namalengkap">Nama lengkap mempelai wanita</label>
+                        <input class="p-2 border-b border-black/40" id="mempelai-wanita-namalengkap" type="text" name="mempelai_wanita_namalengkap" value="${res.data.mempelai_wanita_namalengkap}">
+                        <label for="mempelai-wanita-nchild">Mempelai wanita anak ke-</label>
+                        <select class="p-2 border-b border-black/40" name="mempelai_wanita_nchild" id="mempelai-wanita-nchild">
+                          <option value="1" ${res.data.mempelai_wanita_nchild=='1' ? 'selected' : ''}>1</option>
+                          <option value="2" ${res.data.mempelai_wanita_nchild=='2' ? 'selected' : ''}>2</option>
+                          <option value="3" ${res.data.mempelai_wanita_nchild=='3' ? 'selected' : ''}>3</option>
+                          <option value="4" ${res.data.mempelai_wanita_nchild=='4' ? 'selected' : ''}>4</option>
+                          <option value="5" ${res.data.mempelai_wanita_nchild=='5' ? 'selected' : ''}>5</option>
+                          <option value="6" ${res.data.mempelai_wanita_nchild=='6' ? 'selected' : ''}>6</option>
+                          <option value="7" ${res.data.mempelai_wanita_nchild=='7' ? 'selected' : ''}>7</option>
+                          <option value="8" ${res.data.mempelai_wanita_nchild=='8' ? 'selected' : ''}>8</option>
+                          <option value="9" ${res.data.mempelai_wanita_nchild=='9' ? 'selected' : ''}>9</option>
+                        </select>
+                        <label for="mempelai-wanita-namaayah">Nama ayah mempelai wanita</label>
+                        <input class="p-2 border-b border-black/40" id="mempelai-wanita-namaayah" type="text" name="mempelai_wanita_namaayah" value="${res.data.mempelai_wanita_namaayah}">
+                        <label for="mempelai-wanita-namaibu">Nama ibu mempelai wanita</label>
+                        <input class="p-2 border-b border-black/40" id="mempelai-wanita-namaibu" type="text" name="mempelai_wanita_namaibu" value="${res.data.mempelai_wanita_namaibu}">
+                        <label for="mempelai-wanita-sosmed">Sosmed mempelai wanita</label>
+                        <select class="p-2 border-b border-black/40" name="mempelai_wanita_sosmed" id="mempelai-wanita-sosmed">
+                          <option value=""></option>
+                          <option value="whatsapp" ${res.data.mempelai_pria_sosmed=='whatsapp' ? 'selected' : ''}>WhatsApp</option>
+                          <option value="telegram" ${res.data.mempelai_pria_sosmed=='telegram' ? 'selected' : ''}>Telegram</option>
+                          <option value="instagram" ${res.data.mempelai_pria_sosmed=='instagram' ? 'selected' : ''}>Instagram</option>
+                          <option value="tiktok" ${res.data.mempelai_pria_sosmed=='tiktok' ? 'selected' : ''}>Tiktok</option>
+                          <option value="facebook" ${res.data.mempelai_pria_sosmed=='facebook' ? 'selected' : ''}>Facebook</option>
+                          <option value="x" ${res.data.mempelai_pria_sosmed=='x' ? 'selected' : ''}>X</option>
+                          <option value="linkedin" ${res.data.mempelai_pria_sosmed=='linkedin' ? 'selected' : ''}>LinkedIn</option>
+                          <option value="youtube" ${res.data.mempelai_pria_sosmed=='youtube' ? 'selected' : ''}>Youtube</option>
+                        </select>
+                        <label for="mempelai-wanita-linksosmed">Link sosmed mempelai wanita</label>
+                        <input class="p-2 border-b border-black/40" id="mempelai-wanita-linksosmed" type="text" name="mempelai_wanita_linksosmed" value="${res.data.mempelai_pria_linksosmed}">
+                        
+                        <label for="mempelai-pria-img">Foto mempelai pria</label>
+                        <img class="border border-black ${!res.data.mempelai_pria_img||res.data.mempelai_pria_img == 'undefined'?'hidden':''}" src="/assets/mempelai/${res.data.username}/${res.data.mempelai_pria_img}" alt="" width="96" height="96">
+                        <input id="old-mempelai-pria-img" type="hidden" name="old_mempelai_pria_img" value="${res.data.mempelai_pria_img}">
+                        <input class="p-2 border-b border-black/40" id="mempelai-pria-img" type="file" name="mempelai_pria_img" accept=".jpg, .png">
+                        <label for="mempelai-pria-namalengkap">Nama lengkap mempelai pria</label>
+                        <input class="p-2 border-b border-black/40" id="mempelai-pria-namalengkap" type="text" name="mempelai_pria_namalengkap" value="${res.data.mempelai_pria_namalengkap}">
+                        <label for="mempelai-pria-nchild">Mempelai pria anak ke-</label>
+                        <select class="p-2 border-b border-black/40" name="mempelai_pria_nchild" id="mempelai-pria-nchild">
+                          <option value="1" ${res.data.mempelai_pria_nchild=='1' ? 'selected' : ''}>1</option>
+                          <option value="2" ${res.data.mempelai_pria_nchild=='2' ? 'selected' : ''}>2</option>
+                          <option value="3" ${res.data.mempelai_pria_nchild=='3' ? 'selected' : ''}>3</option>
+                          <option value="4" ${res.data.mempelai_pria_nchild=='4' ? 'selected' : ''}>4</option>
+                          <option value="5" ${res.data.mempelai_pria_nchild=='5' ? 'selected' : ''}>5</option>
+                          <option value="6" ${res.data.mempelai_pria_nchild=='6' ? 'selected' : ''}>6</option>
+                          <option value="7" ${res.data.mempelai_pria_nchild=='7' ? 'selected' : ''}>7</option>
+                          <option value="8" ${res.data.mempelai_pria_nchild=='8' ? 'selected' : ''}>8</option>
+                          <option value="9" ${res.data.mempelai_pria_nchild=='9' ? 'selected' : ''}>9</option>
+                        </select>
+                        <label for="mempelai-pria-namaayah">Nama ayah mempelai pria</label>
+                        <input class="p-2 border-b border-black/40" id="mempelai-pria-namaayah" type="text" name="mempelai_pria_namaayah" value="${res.data.mempelai_pria_namaayah}">
+                        <label for="mempelai-pria-namaibu">Nama ibu mempelai pria</label>
+                        <input class="p-2 border-b border-black/40" id="mempelai-pria-namaibu" type="text" name="mempelai_pria_namaibu" value="${res.data.mempelai_pria_namaibu}">
+                        <label for="mempelai-pria-sosmed">Sosmed mempelai pria</label>
+                        <select class="p-2 border-b border-black/40" name="mempelai_pria_sosmed" id="mempelai-pria-sosmed">
+                          <option value=""></option>
+                          <option value="whatsapp" ${res.data.mempelai_pria_sosmed=='whatsapp' ? 'selected' : ''}>WhatsApp</option>
+                          <option value="telegram" ${res.data.mempelai_pria_sosmed=='telegram' ? 'selected' : ''}>Telegram</option>
+                          <option value="instagram" ${res.data.mempelai_pria_sosmed=='instagram' ? 'selected' : ''}>Instagram</option>
+                          <option value="tiktok" ${res.data.mempelai_pria_sosmed=='tiktok' ? 'selected' : ''}>Tiktok</option>
+                          <option value="facebook" ${res.data.mempelai_pria_sosmed=='facebook' ? 'selected' : ''}>Facebook</option>
+                          <option value="x" ${res.data.mempelai_pria_sosmed=='x' ? 'selected' : ''}>X</option>
+                          <option value="linkedin" ${res.data.mempelai_pria_sosmed=='linkedin' ? 'selected' : ''}>LinkedIn</option>
+                          <option value="youtube" ${res.data.mempelai_pria_sosmed=='youtube' ? 'selected' : ''}>Youtube</option>
+                        </select>
+                        <label for="mempelai-pria-linksosmed">Link sosmed mempelai pria</label>
+                        <input class="p-2 border-b border-black/40" id="mempelai-pria-linksosmed" type="text" name="mempelai_pria_linksosmed" value="${res.data.mempelai_pria_linksosmed}">
+
+                        <label for="acara-bgimg">Gambar background countdown</label>
+                        <img class="border border-black ${!res.data.acara_bgimg||res.data.acara_bgimg == 'undefined'?'hidden':''}" src="/assets/mempelai/${res.data.username}/${res.data.acara_bgimg}" alt="" width="96" height="96">
+                        <input id="old-acara-bgimg" type="hidden" name="old_acara_bgimg" value="${res.data.acara_bgimg}">
+                        <input class="p-2 border-b border-black/40" id="acara-bgimg" type="file" name="acara_bgimg" accept=".jpg, .png">
+
+                        <label for="acara-akad-tgl">Tanggal akad</label>
+                        <input class="p-2 border-b border-black/40" id="acara-akad-tgl" type="date" name="acara_akad_tgl" value="${res.data.acara_akad_tgl}">
+                        <label for="acara-akad-waktumulai">Waktu mulai akad</label>
+                        <input class="p-2 border-b border-black/40" id="acara-akad-waktumulai" type="time" name="acara_akad_waktumulai" value="${res.data.acara_akad_waktumulai}">
+                        <label for="acara-akad-waktuselesai">Waktu selesai akad</label>
+                        <input class="p-2 border-b border-black/40" id="acara-akad-waktuselesai" type="time" name="acara_akad_waktuselesai" value="${res.data.acara_akad_waktuselesai}">
+                        <label for="acara-akad-tempat">Alamat tempat akad</label>
+                        <input class="p-2 border-b border-black/40" id="acara-akad-tempat" type="text" name="acara_akad_tempat" value="${res.data.acara_akad_tempat}">
+                        
+                        <label for="acara-resepsi-tgl">Tanggal resepsi</label>
+                        <input class="p-2 border-b border-black/40" id="acara-resepsi-tgl" type="date" name="acara_resepsi_tgl">
+                        <label for="acara-resepsi-waktumulai">Waktu mulai resepsi</label>
+                        <input class="p-2 border-b border-black/40" id="acara-resepsi-waktumulai" type="time" name="acara_resepsi_waktumulai" value="${res.data.acara_resepsi_waktumulai}">
+                        <label for="acara-resepsi-waktuselesai">Waktu selesai resepsi</label>
+                        <input class="p-2 border-b border-black/40" id="acara-resepsi-waktuselesai" type="time" name="acara_resepsi_waktuselesai" value="${res.data.acara_resepsi_waktuselesai}">
+                        <label for="acara-resepsi-tempat">Alamat tempat resepsi</label>
+                        <input class="p-2 border-b border-black/40" id="acara-resepsi-tempat" type="text" name="acara_resepsi_tempat" value="${res.data.acara_resepsi_tempat}">
+                        
+                        <label for="acara-linkgooglemap">Link googlemap</label>
+                        <input class="p-2 border-b border-black/40" id="acara-linkgooglemap" type="text" name="acara_linkgooglemap" value="${res.data.acara_linkgooglemap}">
+                        <label for="acara-embededgooglemap">Script embeded googlemap</label>
+                        ${res.data.acara_embededgooglemap}
+                        <input class="p-2 border-b border-black/40" id="acara-embededgooglemap" type="text" name="acara_embededgooglemap">
+                        
+                        <input id="old-gallery-img1" type="hidden" name="old_gallery_img1" value="${res.data.gallery_img1}">
+                        <input id="old-gallery-img2" type="hidden" name="old_gallery_img2" value="${res.data.gallery_img2}">
+                        <input id="old-gallery-img3" type="hidden" name="old_gallery_img3" value="${res.data.gallery_img3}">
+                        <input id="old-gallery-img4" type="hidden" name="old_gallery_img4" value="${res.data.gallery_img4}">
+                        <input id="old-gallery-img5" type="hidden" name="old_gallery_img5" value="${res.data.gallery_img5}">
+                        <input id="old-gallery-img6" type="hidden" name="old_gallery_img6" value="${res.data.gallery_img6}">
+                        <input id="old-gallery-img7" type="hidden" name="old_gallery_img7" value="${res.data.gallery_img7}">
+                        <input id="old-gallery-img8" type="hidden" name="old_gallery_img8" value="${res.data.gallery_img8}">
+                        <input id="old-gallery-img9" type="hidden" name="old_gallery_img9" value="${res.data.gallery_img9}">
+                        <input id="old-gallery-img10" type="hidden" name="old_gallery_img10" value="${res.data.gallery_img10}">
+                        <input id="old-gallery-img11" type="hidden" name="old_gallery_img11" value="${res.data.gallery_img11}">
+                        <input id="old-gallery-img12" type="hidden" name="old_gallery_img12" value="${res.data.gallery_img12}">
+                        <label for="gallery-img1">Foto gallery 1</label>
+                        <img class="border border-black ${!res.data.gallery_img1||res.data.gallery_img1 == 'undefined'?'hidden':''}" src="/assets/mempelai/${res.data.username}/${res.data.gallery_img1}" alt="" width="96" height="96">
+                        <input class="p-2 border-b border-black/40" id="gallery-img1" type="file" name="gallery_img1" accept=".jpg, .png">
+                        <label for="gallery-img2">Foto gallery 2</label>
+                        <img class="border border-black ${!res.data.gallery_img2||res.data.gallery_img2 == 'undefined'?'hidden':''}" src="/assets/mempelai/${res.data.username}/${res.data.gallery_img2}" alt="" width="96" height="96">
+                        <input class="p-2 border-b border-black/40" id="gallery-img2" type="file" name="gallery_img2" accept=".jpg, .png">
+                        <label for="gallery-img3">Foto gallery 3</label>
+                        <img class="border border-black ${!res.data.gallery_img3||res.data.gallery_img3 == 'undefined'?'hidden':''}" src="/assets/mempelai/${res.data.username}/${res.data.gallery_img3}" alt="" width="96" height="96">
+                        <input class="p-2 border-b border-black/40" id="gallery-img3" type="file" name="gallery_img3" accept=".jpg, .png">
+                        <label for="gallery-img4">Foto gallery 4</label>
+                        <img class="border border-black ${!res.data.gallery_img4||res.data.gallery_img4 == 'undefined'?'hidden':''}" src="/assets/mempelai/${res.data.username}/${res.data.gallery_img4}" alt="" width="96" height="96">
+                        <input class="p-2 border-b border-black/40" id="gallery-img4" type="file" name="gallery_img4" accept=".jpg, .png">
+                        <label for="gallery-img5">Foto gallery 5</label>
+                        <img class="border border-black ${!res.data.gallery_img5||res.data.gallery_img5 == 'undefined'?'hidden':''}" src="/assets/mempelai/${res.data.username}/${res.data.gallery_img5}" alt="" width="96" height="96">
+                        <input class="p-2 border-b border-black/40" id="gallery-img5" type="file" name="gallery_img5" accept=".jpg, .png">
+                        <label for="gallery-img6">Foto gallery 6</label>
+                        <img class="border border-black ${!res.data.gallery_img6||res.data.gallery_img6 == 'undefined'?'hidden':''}" src="/assets/mempelai/${res.data.username}/${res.data.gallery_img6}" alt="" width="96" height="96">
+                        <input class="p-2 border-b border-black/40" id="gallery-img6" type="file" name="gallery_img6" accept=".jpg, .png">
+                        <label for="gallery-img7">Foto gallery 7</label>
+                        <img class="border border-black ${!res.data.gallery_img7||res.data.gallery_img7 == 'undefined'?'hidden':''}" src="/assets/mempelai/${res.data.username}/${res.data.gallery_img7}" alt="" width="96" height="96">
+                        <input class="p-2 border-b border-black/40" id="gallery-img7" type="file" name="gallery_img7" accept=".jpg, .png">
+                        <label for="gallery-img8">Foto gallery 8</label>
+                        <img class="border border-black ${!res.data.gallery_img8||res.data.gallery_img8 == 'undefined'?'hidden':''}" src="/assets/mempelai/${res.data.username}/${res.data.gallery_img8}" alt="" width="96" height="96">
+                        <input class="p-2 border-b border-black/40" id="gallery-img8" type="file" name="gallery_img8" accept=".jpg, .png">
+                        <label for="gallery-img9">Foto gallery 9</label>
+                        <img class="border border-black ${!res.data.gallery_img9||res.data.gallery_img9 == 'undefined'?'hidden':''}" src="/assets/mempelai/${res.data.username}/${res.data.gallery_img9}" alt="" width="96" height="96">
+                        <input class="p-2 border-b border-black/40" id="gallery-img9" type="file" name="gallery_img9" accept=".jpg, .png">
+                        <label for="gallery-img10">Foto gallery 10</label>
+                        <img class="border border-black ${!res.data.gallery_img10||res.data.gallery_img10 == 'undefined'?'hidden':''}" src="/assets/mempelai/${res.data.username}/${res.data.gallery_img10}" alt="" width="96" height="96">
+                        <input class="p-2 border-b border-black/40" id="gallery-img10" type="file" name="gallery_img10" accept=".jpg, .png">
+                        <label for="gallery-img11">Foto gallery 11</label>
+                        <img class="border border-black ${!res.data.gallery_img11||res.data.gallery_img11 == 'undefined'?'hidden':''}" src="/assets/mempelai/${res.data.username}/${res.data.gallery_img11}" alt="" width="96" height="96">
+                        <input class="p-2 border-b border-black/40" id="gallery-img11" type="file" name="gallery_img11" accept=".jpg, .png">
+                        <label for="gallery-img12">Foto gallery 12</label>
+                        <img class="border border-black ${!res.data.gallery_img12||res.data.gallery_img12 == 'undefined'?'hidden':''}" src="/assets/mempelai/${res.data.username}/${res.data.gallery_img12}" alt="" width="96" height="96">
+                        <input class="p-2 border-b border-black/40" id="gallery-img12" type="file" name="gallery_img12" accept=".jpg, .png">
+                        
+                        <label for="gallery-embededyoutube">Script embeded youtube</label>
+                        ${res.data.gallery_embededyoutube}
+                        <input class="p-2 border-b border-black/40" id="gallery-embededyoutube" type="text" name="gallery_embededyoutube">
+                        
+                        <label for="amplop1-bank">Bank 1</label>
+                        <select class="p-2 border-b border-black/40" name="amplop1_bank" id="amplop1-bank">
+                          <option value=""></option>
+                          <option value="bca" ${res.data.amplop1_bank=='bca' ? 'selected' : ''}>BCA</option>
+                          <option value="mandiri" ${res.data.amplop1_bank=='mandiri' ? 'selected' : ''}>Mandiri</option>
+                          <option value="bni" ${res.data.amplop1_bank=='bni' ? 'selected' : ''}>BNI</option>
+                          <option value="bri" ${res.data.amplop1_bank=='bri' ? 'selected' : ''}>BRI</option>
+                          <option value="bsi" ${res.data.amplop1_bank=='bsi' ? 'selected' : ''}>BSI</option>
+                          <option value="cimb-niaga" ${res.data.amplop1_bank=='cimb-niaga' ? 'selected' : ''}>CIMB Niaga</option>
+                          <option value="danamon" ${res.data.amplop1_bank=='danamon' ? 'selected' : ''}>Danamon</option>
+                          <option value="jago" ${res.data.amplop1_bank=='jago' ? 'selected' : ''}>Jago</option>
+                        </select>
+                        <label for="amplop1-nama">Nama pemilik bank 1</label>
+                        <input class="p-2 border-b border-black/40" id="amplop1-nama" type="text" name="amplop1_nama" value="${res.data.amplop1_nama}">
+                        <label for="amplop1-norek">No. rekening bank 1</label>
+                        <input class="p-2 border-b border-black/40" id="amplop1-norek" type="text" name="amplop1_norek" value="${res.data.amplop1_norek}">
+                        
+                        <label for="amplop2-bank">Bank 2</label>
+                        <select class="p-2 border-b border-black/40" name="amplop2_bank" id="amplop2-bank">
+                          <option value=""></option>
+                          <option value="bca" ${res.data.amplop2_bank=='bca' ? 'selected' : ''}>BCA</option>
+                          <option value="mandiri" ${res.data.amplop2_bank=='mandiri' ? 'selected' : ''}>Mandiri</option>
+                          <option value="bni" ${res.data.amplop2_bank=='bni' ? 'selected' : ''}>BNI</option>
+                          <option value="bri" ${res.data.amplop2_bank=='bri' ? 'selected' : ''}>BRI</option>
+                          <option value="bsi" ${res.data.amplop2_bank=='bsi' ? 'selected' : ''}>BSI</option>
+                          <option value="cimb-niaga" ${res.data.amplop2_bank=='cimb-niaga' ? 'selected' : ''}>CIMB Niaga</option>
+                          <option value="danamon" ${res.data.amplop2_bank=='danamon' ? 'selected' : ''}>Danamon</option>
+                          <option value="jago" ${res.data.amplop2_bank=='jago' ? 'selected' : ''}>Jago</option>
+                        </select>
+                        <label for="amplop2-nama">Nama pemilik bank 2</label>
+                        <input class="p-2 border-b border-black/40" id="amplop2-nama" type="text" name="amplop2_nama" value="${res.data.amplop2_nama}">
+                        <label for="amplop2-norek">No. rekening bank 2</label>
+                        <input class="p-2 border-b border-black/40" id="amplop2-norek" type="text" name="amplop2_norek" value="${res.data.amplop2_norek}">
+                        
+                        <label for="penutup-text">Penutup</label>
+                        <input class="p-2 border-b border-black/40" id="penutup-text" type="text" name="penutup_text" value="${res.data.penutup_text}">
+
+                        <button type="submit">Simpan</button>`
+        document.querySelector('form').innerHTML = tempUI
+
+        document.querySelectorAll('iframe')[0] ? document.querySelectorAll('iframe')[0].style.width = '100%' : ''
+        document.querySelectorAll('iframe')[1] ? document.querySelectorAll('iframe')[1].style.width = '100%' : ''
+
+        listUndangan(res.data.kode_undangan)
+        klikSimpan()
+      }
+    })
+  }
+
+  // Klik simpan
+  function klikSimpan() {
+    const form = document.querySelector('form')
+    form.addEventListener('submit', async e => {
+      e.preventDefault()
+      const formData = new FormData()
+      formData.append('_method', 'PUT')
+
+      formData.append("kode_undangan", document.querySelector('#kode-undangan').value)
+      formData.append("jenis_undangan", document.querySelector('#jenis-undangan').value)
+
+      formData.append("username", document.querySelector('#username').value)
+      formData.append("nama_wanita", document.querySelector('#nama-wanita').value)
+      formData.append("nama_pria", document.querySelector('#nama-pria').value)
+
+      formData.append("old_cover_bgimg1", document.querySelector('#old-cover-bgimg1').value)
+      formData.append("old_cover_bgimg2", document.querySelector('#old-cover-bgimg2').value)
+      formData.append("old_cover_bgimg3", document.querySelector('#old-cover-bgimg3').value)
+      formData.append("cover_bgimg1", document.querySelector('#cover-bgimg1').files[0])
+      formData.append("cover_bgimg2", document.querySelector('#cover-bgimg2').files[0])
+      formData.append("cover_bgimg3", document.querySelector('#cover-bgimg3').files[0])
+                        
+      formData.append("old_music", document.querySelector('#old-music').value)
+      formData.append("music", document.querySelector('#music').files[0])
+                        
+      formData.append("old_home_img", document.querySelector('#old-home-img').value)
+      formData.append("home_img", document.querySelector('#home-img').files[0])
+                        
+      formData.append("pembuka_doa", document.querySelector('#pembuka-doa').value)
+      formData.append("pembuka_text", document.querySelector('#pembuka-text').value)
+                        
+      formData.append("old_mempelai_wanita_img", document.querySelector('#old-mempelai-wanita-img').value)
+      formData.append("mempelai_wanita_img", document.querySelector('#mempelai-wanita-img').files[0])
+      formData.append("mempelai_wanita_namalengkap", document.querySelector('#mempelai-wanita-namalengkap').value)
+      formData.append("mempelai_wanita_nchild", document.querySelector('#mempelai-wanita-nchild').value)
+      formData.append("mempelai_wanita_namaayah", document.querySelector('#mempelai-wanita-namaayah').value)
+      formData.append("mempelai_wanita_namaibu", document.querySelector('#mempelai-wanita-namaibu').value)
+      formData.append("mempelai_wanita_sosmed", document.querySelector('#mempelai-wanita-sosmed').value)
+      formData.append("mempelai_pria_linksosmed", document.querySelector('#mempelai-wanita-linksosmed').value)
+                        
+      formData.append("old_mempelai_pria_img", document.querySelector('#old-mempelai-pria-img').value)
+      formData.append("mempelai_pria_img", document.querySelector('#mempelai-pria-img').files[0])
+      formData.append("mempelai_pria_namalengkap", document.querySelector('#mempelai-pria-namalengkap').value)
+      formData.append("mempelai_pria_nchild", document.querySelector('#mempelai-pria-nchild').value)
+      formData.append("mempelai_pria_namaayah", document.querySelector('#mempelai-pria-namaayah').value)
+      formData.append("mempelai_pria_namaibu", document.querySelector('#mempelai-pria-namaibu').value)
+      formData.append("mempelai_pria_sosmed", document.querySelector('#mempelai-pria-sosmed').value)
+      formData.append("mempelai_pria_linksosmed", document.querySelector('#mempelai-pria-linksosmed').value)
+
+      formData.append("old_acara_bgimg", document.querySelector('#old-acara-bgimg').value)
+      formData.append("acara_bgimg", document.querySelector('#acara-bgimg').files[0])
+
+      formData.append("acara_akad_tgl", document.querySelector('#acara-akad-tgl').value)
+      formData.append("acara_akad_waktumulai", document.querySelector('#acara-akad-waktumulai').value)
+      formData.append("acara_akad_waktuselesai", document.querySelector('#acara-akad-waktuselesai').value)
+      formData.append("acara_akad_tempat", document.querySelector('#acara-akad-tempat').value)
+                        
+      formData.append("acara_resepsi_tgl", document.querySelector('#acara-resepsi-tgl').value)
+      formData.append("acara_resepsi_waktumulai", document.querySelector('#acara-resepsi-waktumulai').value)
+      formData.append("acara_resepsi_waktuselesai", document.querySelector('#acara-resepsi-waktuselesai').value)
+      formData.append("acara_resepsi_tempat", document.querySelector('#acara-resepsi-tempat').value)
+                        
+      formData.append("acara_linkgooglemap", document.querySelector('#acara-linkgooglemap').value)
+      formData.append("acara_embededgooglemap", document.querySelector('#acara-embededgooglemap').value)
+                        
+      formData.append("old_gallery_img1", document.querySelector('#old-gallery-img1').value)
+      formData.append("old_gallery_img2", document.querySelector('#old-gallery-img2').value)
+      formData.append("old_gallery_img3", document.querySelector('#old-gallery-img3').value)
+      formData.append("old_gallery_img4", document.querySelector('#old-gallery-img4').value)
+      formData.append("old_gallery_img5", document.querySelector('#old-gallery-img5').value)
+      formData.append("old_gallery_img6", document.querySelector('#old-gallery-img6').value)
+      formData.append("old_gallery_img7", document.querySelector('#old-gallery-img7').value)
+      formData.append("old_gallery_img8", document.querySelector('#old-gallery-img8').value)
+      formData.append("old_gallery_img9", document.querySelector('#old-gallery-img9').value)
+      formData.append("old_gallery_img10", document.querySelector('#old-gallery-img10').value)
+      formData.append("old_gallery_img11", document.querySelector('#old-gallery-img11').value)
+      formData.append("old_gallery_img12", document.querySelector('#old-gallery-img12').value)
+      formData.append("gallery_img1", document.querySelector('#gallery-img1').files[0])
+      formData.append("gallery_img2", document.querySelector('#gallery-img2').files[0])
+      formData.append("gallery_img3", document.querySelector('#gallery-img3').files[0])
+      formData.append("gallery_img4", document.querySelector('#gallery-img4').files[0])
+      formData.append("gallery_img5", document.querySelector('#gallery-img5').files[0])
+      formData.append("gallery_img6", document.querySelector('#gallery-img6').files[0])
+      formData.append("gallery_img7", document.querySelector('#gallery-img7').files[0])
+      formData.append("gallery_img8", document.querySelector('#gallery-img8').files[0])
+      formData.append("gallery_img9", document.querySelector('#gallery-img9').files[0])
+      formData.append("gallery_img10", document.querySelector('#gallery-img10').files[0])
+      formData.append("gallery_img11", document.querySelector('#gallery-img11').files[0])
+      formData.append("gallery_img12", document.querySelector('#gallery-img12').files[0])
+                        
+      formData.append("gallery_embededyoutube", document.querySelector('#gallery-embededyoutube').value)
+                        
+      formData.append("amplop1_bank", document.querySelector('#amplop1-bank').value)
+      formData.append("amplop1_nama", document.querySelector('#amplop1-nama').value)
+      formData.append("amplop1_norek", document.querySelector('#amplop1-norek').value)
+                        
+      formData.append("amplop2_bank", document.querySelector('#amplop2-bank').value)
+      formData.append("amplop2_nama", document.querySelector('#amplop2-nama').value)
+      formData.append("amplop2_norek", document.querySelector('#amplop2-norek').value)
+                        
+      formData.append("penutup_text", document.querySelector('#penutup-text').value)
+
+      await fetch(`${uri}/api/mempelai/change/${window.location.search.substr(1).split('/')[1]}`, {
+        headers: {
+          'Authorization': `Bearer ${getCookie('token')}`,
+        },
+        method: 'POST',
+        body: formData
+      })
+      .then(res=>res.json())
+      .then(res=>{
+        console.log(res)
+        if(!res.status) {
+          alert('Simpan mempelai gagal')
+        }else {
+          alert('Simpan mempelai berhasil')
+          window.location.replace(`${uri}/admin/mempelai?${window.location.search.substr(1).split('/')[0]}`)
+        }
+      })
+      .catch(err=>console.log(err))
+    })
+  }
+</script>
+</body>
+</html>

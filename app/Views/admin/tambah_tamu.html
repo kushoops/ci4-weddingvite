@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="/modules/tailwindcss.js"></script>
+  <script src="/modules/config.js"></script>
+  <script src="/modules/cookies.js"></script>
+</head>
+<body>
+<div class="p-2">
+  <form class="flex gap-4 flex-col p-4">
+    <span class="self-center">Tambah Tamu</span>
+    <label for="nama">Nama</label>
+    <input class="p-2 border-b border-black/40" id="nama" type="text" name="nama" required>
+    <label for="telp">No. WhatsApp</label>
+    <input class="p-2 border-b border-black/40" id="telp" type="number" name="telp" placeholder="62" required>
+    <button type="submit">Tambah</button>
+  </form>
+</div>
+<script>
+  // Klik tambah
+  klikTambah()
+  function klikTambah() {
+    const form = document.querySelector('form')
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault()
+      const formData = new FormData(form)
+      const params = new URLSearchParams(formData)
+      await fetch(`${uri}/api/tamu/add/${window.location.search.substr(1).split('/')[1]}`, {
+        headers: {
+          'Authorization': `Bearer ${getCookie('token')}`,
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        method: 'POST',
+        body: params
+      })
+      .then(res=>res.json())
+      .then(res=>{
+        if(!res.status) {
+          alert('Tambah tamu gagal')
+        }else {
+          alert('Tambah tamu berhasil')
+          window.location.replace(`${uri}/admin/tamu?${window.location.search.substr(1)}`)
+        }
+      })
+      .catch(err=>console.log(err))
+    })
+  }
+</script>
+</body>
+</html>

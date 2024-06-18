@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="/modules/tailwindcss.js"></script>
+  <script src="/modules/config.js"></script>
+  <script src="/modules/cookies.js"></script>
+</head>
+<body class="flex justify-center items-center">
+  <form class="bg-black/20 flex flex-col items-center gap-4 w-fit p-6">
+    <h1>Weddingvite</h1>
+    <input class="w-56 p-1" type="email" name="email" placeholder="Email" required>
+    <input class="w-56 p-1" type="password" name="password" placeholder="Password" required>
+    <button class="bg-black/20 py-2 px-4 rounded-full" type="submit">Login</button>
+  </form>
+<script>
+  document.body.style.height = `${window.innerHeight}px`
+
+  // Klik login
+  klikLogin()
+  function klikLogin() {
+    const form = document.querySelector('form')
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault()
+      const formData = new FormData(form)
+      const params = new URLSearchParams(formData)
+      await fetch(`${uri}/api/login`, {
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        method: 'POST',
+        body: params
+      })
+      .then(res=>res.json())
+      .then(res=>{
+        if(!res.status) {
+          alert('Login gagal')
+        }else {
+          setCookie('token', res.data.token, 1)
+          alert('Login berhasil')
+          window.location.replace(`${uri}/mempelai/tamu?${res.data.user.id}`)
+        }
+      })
+      .catch(err=>console.log(err))
+    })
+  }
+</script>
+</body>
+</html>

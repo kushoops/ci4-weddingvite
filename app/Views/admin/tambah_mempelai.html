@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="/modules/tailwindcss.js"></script>
+  <script src="/modules/config.js"></script>
+  <script src="/modules/cookies.js"></script>
+  <script src="/modules/auth.js"></script>
+</head>
+<body>
+<div class="p-2">
+  <form class="flex gap-4 flex-col p-4">
+    <span class="self-center">Tambah Mempelai</span>
+    <label for="kode-undangan">Kode undangan</label>
+    <select class="p-2" name="kode_undangan" id="kode-undangan"></select>
+    <label for="jenis-undangan">Jenis undangan</label>
+    <select class="p-2" name="jenis_undangan" id="jenis-undangan">
+      <option value="normal">Normal</option>
+      <option value="premium">Premium</option>
+    </select>
+    <label for="username">Username</label>
+    <input class="p-2 border-b border-black/40" id="username" type="text" name="username" required>
+    <label for="email">Email</label>
+    <input class="p-2 border-b border-black/40" id="email" type="email" name="email" required>
+    <label for="password">Password</label>
+    <input class="p-2 border-b border-black/40" id="password" type="text" name="password" required>
+    <button type="submit">Tambah</button>
+  </form>
+</div>
+<script>
+
+  // Get list undangan
+  listUndangan()
+  async function listUndangan() {
+    await fetch(`${uri}/api/undangan/list`, {
+      headers: {
+        'Authorization': `Bearer ${getCookie('token')}`
+      }
+    })
+    .then(res=>res.json())
+    .then(res=>{
+      const data = JSON.parse(JSON.stringify(res.data))
+      let tempUI = ''
+      Object.values(data).map((e, i) => {
+        tempUI += `<option value="${e['kode']}">${e['kode']}</option>`
+      })
+      document.querySelector('#kode-undangan').innerHTML = tempUI
+
+      klikTambah()
+    })
+  }
+
+  // Klik tambah
+  function klikTambah() {
+    const form = document.querySelector('form')
+    form.addEventListener('submit', async e => {
+      e.preventDefault()
+      const formData = new FormData(form)
+      const params = new URLSearchParams(formData)
+      await fetch(`${uri}/api/mempelai/register`, {
+        headers: {
+          'Authorization': `Bearer ${getCookie('token')}`,
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        method: 'POST',
+        body: params
+      })
+      .then(res=>res.json())
+      .then(res=>{
+        if(!res.status) {
+          alert('Tambah mempelai gagal')
+        }else {
+          alert('Tambah mempelai berhasil')
+          window.location.replace(`${uri}/admin/mempelai?${window.location.search.substr(1)}`)
+        }
+      })
+      .catch(err=>console.log(err))
+    })
+  }
+</script>
+</body>
+</html>
